@@ -1,0 +1,224 @@
+# Alerting Configuration
+
+# Email notifications
+email:
+  enabled: true
+  smtp_server: "smtp.gmail.com"
+  smtp_port: 587
+  use_tls: true
+  from_address: "data-quality@company.com"
+  
+  # Recipients by severity
+  recipients:
+    critical:
+      - "data-lead@company.com"
+      - "engineering-manager@company.com"
+    high:
+      - "data-team@company.com"
+    medium:
+      - "data-team@company.com"
+    low:
+      - "data-team@company.com"
+      
+  # Email templates
+  templates:
+    critical: "templates/email_critical.html"
+    high: "templates/email_high.html"
+    default: "templates/email_default.html"
+
+# Slack notifications
+slack:
+  enabled: true
+  webhook_url: "${SLACK_WEBHOOK_URL}"
+  
+  # Channels by severity
+  channels:
+    critical: "#data-incidents"
+    high: "#data-quality"
+    medium: "#data-quality"
+    low: "#data-monitoring"
+    
+  # Mention users for critical issues
+  mentions:
+    critical: ["@data-lead", "@on-call"]
+    high: ["@data-team"]
+    
+  # Include charts and visualizations
+  include_charts: true
+  
+  # Message format
+  message_format: "detailed"  # simple, detailed, full
+
+# Webhook notifications
+webhooks:
+  enabled: false
+  endpoints:
+    - name: "incident_management"
+      url: "https://api.company.com/incidents"
+      method: "POST"
+      headers:
+        Content-Type: "application/json"
+        Authorization: "Bearer ${API_TOKEN}"
+      severity_filter: ["critical", "high"]
+      
+    - name: "monitoring_system"
+      url: "https://monitoring.company.com/alerts"
+      method: "POST"
+      severity_filter: ["critical", "high", "medium"]
+
+# PagerDuty integration
+pagerduty:
+  enabled: false
+  integration_key: "${PAGERDUTY_KEY}"
+  severity_filter: ["critical"]
+
+# Microsoft Teams
+teams:
+  enabled: false
+  webhook_url: "${TEAMS_WEBHOOK_URL}"
+  channels:
+    critical: "Data Engineering"
+    high: "Data Quality"
+
+# Twilio SMS (for critical alerts)
+twilio:
+  enabled: false
+  account_sid: "${TWILIO_ACCOUNT_SID}"
+  auth_token: "${TWILIO_AUTH_TOKEN}"
+  from_number: "+1234567890"
+  to_numbers:
+    critical:
+      - "+1234567891"
+      - "+1234567892"
+
+# Alert rules
+alert_rules:
+  # Completeness alerts
+  - name: "critical_missing_data"
+    condition: "null_percentage > 50"
+    severity: "critical"
+    description: "More than 50% of data is missing"
+    channels: ["email", "slack", "pagerduty"]
+    cooldown_minutes: 30
+    
+  - name: "high_missing_data"
+    condition: "null_percentage > 20"
+    severity: "high"
+    description: "More than 20% of data is missing"
+    channels: ["email", "slack"]
+    cooldown_minutes: 60
+    
+  # Validation alerts
+  - name: "validation_failure_spike"
+    condition: "validation_failure_rate > 10"
+    severity: "high"
+    description: "Sudden increase in validation failures"
+    channels: ["email", "slack"]
+    cooldown_minutes: 30
+    
+  - name: "critical_validation_failure"
+    condition: "critical_rule_failed == true"
+    severity: "critical"
+    description: "Critical validation rule failed"
+    channels: ["email", "slack", "pagerduty"]
+    cooldown_minutes: 15
+    
+  # Data freshness
+  - name: "stale_data_critical"
+    condition: "data_age_hours > 48"
+    severity: "critical"
+    description: "Data has not been updated in 48 hours"
+    channels: ["email", "slack"]
+    cooldown_minutes: 120
+    
+  - name: "stale_data_warning"
+    condition: "data_age_hours > 24"
+    severity: "medium"
+    description: "Data has not been updated in 24 hours"
+    channels: ["slack"]
+    cooldown_minutes: 240
+    
+  # Schema changes
+  - name: "schema_change_detected"
+    condition: "schema_changed == true"
+    severity: "high"
+    description: "Unexpected schema change detected"
+    channels: ["email", "slack"]
+    cooldown_minutes: 0
+    
+  # Data volume
+  - name: "volume_drop"
+    condition: "row_count < (previous_avg * 0.5)"
+    severity: "high"
+    description: "Significant drop in data volume"
+    channels: ["email", "slack"]
+    cooldown_minutes: 60
+    
+  - name: "volume_spike"
+    condition: "row_count > (previous_avg * 2)"
+    severity: "medium"
+    description: "Unexpected spike in data volume"
+    channels: ["slack"]
+    cooldown_minutes: 120
+    
+  # Anomaly detection
+  - name: "statistical_anomaly"
+    condition: "anomaly_score > 0.95"
+    severity: "medium"
+    description: "Statistical anomaly detected"
+    channels: ["slack"]
+    cooldown_minutes: 120
+    
+  # Data quality score
+  - name: "quality_score_critical"
+    condition: "quality_score < 0.7"
+    severity: "critical"
+    description: "Overall data quality score below threshold"
+    channels: ["email", "slack", "pagerduty"]
+    cooldown_minutes: 30
+    
+  - name: "quality_score_low"
+    condition: "quality_score < 0.85"
+    severity: "high"
+    description: "Data quality score declining"
+    channels: ["email", "slack"]
+    cooldown_minutes: 120
+
+# Alert aggregation
+aggregation:
+  enabled: true
+  window_minutes: 15  # Group alerts within 15 minutes
+  max_alerts_per_group: 10
+  
+# Alert suppression
+suppression:
+  enabled: true
+  
+  # Maintenance windows
+  maintenance_windows:
+    - name: "weekly_maintenance"
+      schedule: "0 2 * * 0"  # Every Sunday at 2 AM
+      duration_minutes: 120
+      
+    - name: "monthly_deployment"
+      schedule: "0 22 1 * *"  # First day of month at 10 PM
+      duration_minutes: 240
+      
+  # Suppress repeated alerts
+  deduplication:
+    enabled: true
+    window_minutes: 60
+
+# Alert history
+history:
+  enabled: true
+  retention_days: 90
+  storage: "database"  # database, file, s3
+
+# Testing and debugging
+testing:
+  test_mode: false  # Send all alerts to test recipients
+  test_recipients:
+    email: ["dev@company.com"]
+    slack: ["#data-quality-test"]
+  dry_run: false  # Log alerts without sending

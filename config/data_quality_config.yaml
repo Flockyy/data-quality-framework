@@ -1,0 +1,330 @@
+# Data Quality Framework Configuration
+
+# General settings
+general:
+  project_name: "Data Quality Framework"
+  environment: "development"  # development, staging, production
+  log_level: "INFO"
+  timezone: "UTC"
+
+# Profiling configuration
+profiling:
+  enabled: true
+  
+  # Statistical analysis
+  statistics:
+    enabled: true
+    percentiles: [0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99]
+    
+  # Distribution analysis
+  distributions:
+    enabled: true
+    detect_skewness: true
+    outlier_detection: true
+    method: "IQR"  # IQR, z-score, isolation_forest
+    
+  # Correlation analysis
+  correlations:
+    enabled: true
+    threshold: 0.7
+    method: "pearson"  # pearson, spearman, kendall
+    
+  # Data type inference
+  type_inference:
+    enabled: true
+    sample_size: 10000
+    
+  # Missing data analysis
+  missing_data:
+    enabled: true
+    patterns: true
+    
+  # Cardinality checks
+  cardinality:
+    enabled: true
+    unique_threshold: 0.95  # Flag columns with >95% unique values
+
+# Validation configuration
+validation:
+  enabled: true
+  fail_fast: false  # Stop on first failure
+  parallel: true
+  max_workers: 4
+  
+  # Built-in rules
+  rules:
+    # Data completeness
+    - name: "customer_id_not_null"
+      column: "customer_id"
+      type: "not_null"
+      severity: "critical"
+      description: "Customer ID must be present"
+      
+    - name: "email_required"
+      column: "email"
+      type: "not_null"
+      severity: "high"
+      
+    # Data format validation
+    - name: "email_format"
+      column: "email"
+      type: "regex"
+      pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+      severity: "high"
+      
+    - name: "phone_format"
+      column: "phone"
+      type: "regex"
+      pattern: '^\+?[1-9]\d{1,14}$'
+      severity: "medium"
+      allow_null: true
+      
+    # Numeric ranges
+    - name: "age_range"
+      column: "age"
+      type: "range"
+      min: 0
+      max: 120
+      severity: "high"
+      
+    - name: "amount_positive"
+      column: "amount"
+      type: "greater_than"
+      value: 0
+      severity: "critical"
+      
+    # Categorical validation
+    - name: "status_valid"
+      column: "status"
+      type: "in_list"
+      allowed_values: ["active", "inactive", "pending", "cancelled"]
+      severity: "high"
+      
+    # Date validation
+    - name: "created_at_not_future"
+      column: "created_at"
+      type: "date_not_future"
+      severity: "high"
+      
+    - name: "date_range"
+      column: "order_date"
+      type: "date_range"
+      min_date: "2020-01-01"
+      max_date: "2030-12-31"
+      severity: "medium"
+      
+    # Uniqueness
+    - name: "customer_id_unique"
+      column: "customer_id"
+      type: "unique"
+      severity: "critical"
+      
+    # String validation
+    - name: "name_length"
+      column: "name"
+      type: "string_length"
+      min_length: 2
+      max_length: 100
+      severity: "medium"
+      
+    # Cross-field validation
+    - name: "end_after_start"
+      columns: ["start_date", "end_date"]
+      type: "date_order"
+      severity: "high"
+      description: "End date must be after start date"
+  
+  # Custom validators
+  custom_validators:
+    - name: "business_logic_validator"
+      module: "validators.custom"
+      class: "BusinessLogicValidator"
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  
+  # Metrics to track
+  metrics:
+    - name: "completeness"
+      description: "Percentage of non-null values"
+      threshold: 0.95
+      
+    - name: "uniqueness"
+      description: "Percentage of unique values"
+      threshold: 0.99
+      
+    - name: "validity"
+      description: "Percentage passing validation rules"
+      threshold: 0.99
+      
+    - name: "consistency"
+      description: "Cross-field consistency score"
+      threshold: 0.98
+      
+    - name: "timeliness"
+      description: "Data freshness check"
+      max_age_hours: 24
+  
+  # Anomaly detection
+  anomaly_detection:
+    enabled: true
+    method: "statistical"  # statistical, ml, isolation_forest
+    sensitivity: 0.95
+    window_size: 30  # days
+    
+  # Alerting
+  alerts:
+    - name: "critical_completeness"
+      condition: "completeness < 0.9"
+      severity: "critical"
+      channels: ["email", "slack"]
+      
+    - name: "high_null_rate"
+      condition: "null_rate > 0.1"
+      severity: "high"
+      channels: ["slack"]
+      
+    - name: "validation_failures"
+      condition: "validity < 0.95"
+      severity: "high"
+      channels: ["email"]
+      
+    - name: "data_freshness"
+      condition: "age_hours > 48"
+      severity: "medium"
+      channels: ["slack"]
+  
+  # Historical tracking
+  history:
+    enabled: true
+    retention_days: 90
+    storage: "database"  # database, file, s3
+
+# Reporting configuration
+reporting:
+  enabled: true
+  
+  # Report formats
+  formats:
+    - html
+    - json
+    - pdf
+    
+  # Report sections
+  sections:
+    - executive_summary
+    - profiling_results
+    - validation_results
+    - data_quality_score
+    - trends
+    - recommendations
+    
+  # Scheduling
+  schedule:
+    enabled: true
+    frequency: "daily"  # hourly, daily, weekly, monthly
+    time: "08:00"
+    timezone: "UTC"
+    
+  # Distribution
+  distribution:
+    email:
+      enabled: true
+      recipients:
+        - "data-team@company.com"
+        - "analytics@company.com"
+      subject: "Data Quality Report - {date}"
+      
+    slack:
+      enabled: true
+      channel: "#data-quality"
+      
+    s3:
+      enabled: false
+      bucket: "data-quality-reports"
+      prefix: "reports/"
+
+# Data sources configuration
+data_sources:
+  # PostgreSQL
+  postgres:
+    enabled: true
+    host: "localhost"
+    port: 5432
+    database: "analytics"
+    schema: "public"
+    
+  # MySQL
+  mysql:
+    enabled: false
+    host: "localhost"
+    port: 3306
+    database: "sales"
+    
+  # MongoDB
+  mongodb:
+    enabled: false
+    host: "localhost"
+    port: 27017
+    database: "events"
+    
+  # CSV files
+  csv:
+    enabled: true
+    encoding: "utf-8"
+    delimiter: ","
+    
+  # Parquet files
+  parquet:
+    enabled: true
+    
+  # API endpoints
+  api:
+    enabled: false
+    timeout: 30
+
+# Integration configuration
+integrations:
+  # Great Expectations
+  great_expectations:
+    enabled: true
+    context_root: "great_expectations/"
+    
+  # dbt
+  dbt:
+    enabled: false
+    project_dir: "dbt_project/"
+    
+  # Airflow
+  airflow:
+    enabled: false
+    dag_folder: "dags/"
+    
+  # Prometheus
+  prometheus:
+    enabled: false
+    port: 9090
+    
+  # Grafana
+  grafana:
+    enabled: false
+    url: "http://localhost:3000"
+
+# Performance settings
+performance:
+  chunk_size: 10000
+  max_memory_mb: 4096
+  cache_enabled: true
+  cache_ttl_seconds: 3600
+  parallel_processing: true
+  max_workers: 4
+
+# Quality dimensions weights (for overall score calculation)
+quality_score:
+  weights:
+    completeness: 0.25
+    uniqueness: 0.15
+    validity: 0.30
+    consistency: 0.20
+    timeliness: 0.10
