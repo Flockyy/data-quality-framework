@@ -5,7 +5,7 @@ Real-time monitoring, metrics tracking, and alerting.
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 
 import pandas as pd
 

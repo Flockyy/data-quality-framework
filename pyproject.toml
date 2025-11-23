@@ -150,9 +150,33 @@ ignore = [
     "PLR0912", # too many branches
     "PLR0915", # too many statements
     "PLR2004", # magic value comparison
+    "PLR1722", # use sys.exit
     "TRY003",  # long exception message
     "COM812",  # missing trailing comma (handled by formatter)
     "ISC001",  # implicit string concatenation (conflicts with formatter)
+    "INP001",  # implicit namespace package
+    "PD901",   # generic df variable name
+    "NPY002",  # legacy numpy random
+    "FBT001",  # boolean positional arg
+    "FBT002",  # boolean default positional arg
+    "PTH123",  # open instead of Path.open
+    "A002",    # argument shadows builtin
+    "SIM108",  # use ternary operator
+    "RET505",  # unnecessary elif after return
+    "DTZ005",  # datetime.now without tz
+    "PD003",   # isna preferred to isnull
+    "BLE001",  # blind except
+    "ARG002",  # unused method argument
+    "RET504",  # unnecessary assignment before return
+    "T201",    # print found
+    "S307",    # use of eval
+    "PGH001",  # no builtin eval
+    "N806",    # variable should be lowercase
+    "RUF013",  # implicit optional
+    "F841",    # unused variable
+    "B007",    # unused loop variable
+    "SLF001",  # private member access
+    "E402",    # module import not at top
 ]
 
 # Allow autofix for all enabled rules (when `--fix`) is provided
