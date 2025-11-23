@@ -80,7 +80,7 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA dqf TO dqf_user;
 
 -- Insert sample data for testing
 INSERT INTO dqf.quality_metrics (dataset_name, completeness, uniqueness, validity, quality_score, row_count)
-VALUES 
+VALUES
     ('test_dataset', 0.95, 0.88, 0.99, 0.94, 1000),
     ('test_dataset', 0.96, 0.89, 0.98, 0.95, 1100);
 

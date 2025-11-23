@@ -14,7 +14,7 @@ python_version=$(python3 --version 2>&1 | awk '{print $2}')
 echo "   Python version: $python_version"
 
 required_version="3.9"
-if [ "$(printf '%s\n' "$required_version" "$python_version" | sort -V | head -n1)" != "$required_version" ]; then 
+if [ "$(printf '%s\n' "$required_version" "$python_version" | sort -V | head -n1)" != "$required_version" ]; then
     echo "❌ Python 3.9 or higher is required"
     exit 1
 fi

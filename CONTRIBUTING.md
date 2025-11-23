@@ -131,15 +131,15 @@ from dqf.rules.base import BaseRule
 
 class MyCustomRule(BaseRule):
     """Custom validation rule"""
-    
+
     def validate(self, series, **kwargs):
         """
         Validate the series
-        
+
         Args:
             series: pandas Series to validate
             **kwargs: Additional parameters
-            
+
         Returns:
             Boolean Series indicating invalid rows
         """

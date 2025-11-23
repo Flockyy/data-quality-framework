@@ -52,7 +52,7 @@ validator = DataValidator()
 # Define rules
 rules = [
     ValidationRule("email", "email", "Email must be valid", Severity.HIGH),
-    ValidationRule("age", "range", "Age must be 18-100", 
+    ValidationRule("age", "range", "Age must be 18-100",
                    severity=Severity.HIGH, params={'min': 18, 'max': 100}),
     ValidationRule("customer_id", "unique", "IDs must be unique", Severity.CRITICAL),
 ]
@@ -79,7 +79,7 @@ validation:
       type: email
       severity: high
       description: "Email must be valid"
-    
+
     - column: amount
       type: greater_than
       value: 0
@@ -196,19 +196,19 @@ from dqf import DQFramework
 
 def validate_data(**context):
     dqf = DQFramework.from_config('config/data_quality_config.yaml')
-    
+
     df = pd.read_sql_table('staging_table', engine)
-    
+
     results = dqf.run_quality_check(
         df=df,
         dataset='staging_data',
         profile=True,
         validate=True
     )
-    
+
     if not results['validation'].is_valid:
         raise ValueError("Data validation failed!")
-    
+
     return True
 
 dag = DAG('data_quality_check', ...)
@@ -231,15 +231,15 @@ import pandas as pd
 
 def test_data_quality(model_name):
     dqf = DQFramework.from_config('config/dqf_config.yaml')
-    
+
     df = ref(model_name)
-    
+
     results = dqf.run_quality_check(
         df=df,
         dataset=model_name,
         validate=True
     )
-    
+
     return results['validation'].is_valid
 ```
 

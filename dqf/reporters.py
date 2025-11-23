@@ -3,18 +3,17 @@ Reporters Module
 Generate reports in various formats (HTML, JSON, PDF).
 """
 
-from typing import Optional
-from datetime import datetime
 import json
 from pathlib import Path
+from typing import Optional
 
 
 class HTMLReporter:
     """Generate HTML reports"""
-    
+
     def __init__(self, template_path: Optional[str] = None):
         self.template_path = template_path
-    
+
     def generate_report(
         self,
         profile_report,
@@ -23,13 +22,13 @@ class HTMLReporter:
     ):
         """Generate HTML report from profile"""
         html_content = self._generate_html(profile_report, include_charts)
-        
-        with open(output_path, 'w', encoding='utf-8') as f:
+
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(html_content)
-    
+
     def _generate_html(self, report, include_charts: bool) -> str:
         """Generate HTML content"""
-        
+
         # Build column details
         columns_html = []
         for col_name, col_profile in report.columns.items():
@@ -55,7 +54,7 @@ class HTMLReporter:
                     </div>
                 </div>
             """
-            
+
             # Add numeric statistics
             if col_profile.mean is not None:
                 col_html += f"""
@@ -72,7 +71,7 @@ class HTMLReporter:
                     </table>
                 </div>
                 """
-            
+
             # Add top values
             if col_profile.top_values:
                 col_html += """
@@ -85,17 +84,17 @@ class HTMLReporter:
                 for value, count in col_profile.top_values[:5]:
                     col_html += f"<tr><td>{value}</td><td>{count:,}</td></tr>"
                 col_html += "</tbody></table></div>"
-            
+
             # Add warnings
             if col_profile.warnings:
                 col_html += '<div class="warnings"><h4>⚠️ Warnings</h4><ul>'
                 for warning in col_profile.warnings:
-                    col_html += f'<li>{warning}</li>'
-                col_html += '</ul></div>'
-            
+                    col_html += f"<li>{warning}</li>"
+                col_html += "</ul></div>"
+
             col_html += "</div>"
             columns_html.append(col_html)
-        
+
         # Complete HTML template
         html = f"""
 <!DOCTYPE html>
@@ -263,10 +262,10 @@ class HTMLReporter:
     <div class="container">
         <h1>📊 Data Profile Report</h1>
         <div class="metadata">
-            <strong>Dataset:</strong> {report.dataset_name} | 
+            <strong>Dataset:</strong> {report.dataset_name} |
             <strong>Profiled:</strong> {report.profiled_at.strftime('%Y-%m-%d %H:%M:%S')}
         </div>
-        
+
         <div class="summary">
             <div class="summary-card">
                 <h3>Total Rows</h3>
@@ -289,21 +288,21 @@ class HTMLReporter:
                 <div class="value">{report.duplicate_percentage:.1f}%</div>
             </div>
         </div>
-        
+
         {f'''<div class="warnings-section">
             <h3>⚠️ Warnings</h3>
             <ul>{''.join(f'<li>{w}</li>' for w in report.warnings)}</ul>
         </div>''' if report.warnings else ''}
-        
+
         <h2 style="margin-bottom: 20px;">Column Details</h2>
         {''.join(columns_html)}
-        
+
         {f'''<div style="margin-top: 40px;">
             <h2>High Correlations</h2>
             <table>
                 <thead><tr><th>Column 1</th><th>Column 2</th><th>Correlation</th></tr></thead>
                 <tbody>
-                    {''.join(f'<tr><td>{c1}</td><td>{c2}</td><td>{corr:.3f}</td></tr>' 
+                    {''.join(f'<tr><td>{c1}</td><td>{c2}</td><td>{corr:.3f}</td></tr>'
                     for c1, c2, corr in report.high_correlations[:10])}
                 </tbody>
             </table>
@@ -317,30 +316,31 @@ class HTMLReporter:
 
 class JSONReporter:
     """Generate JSON reports"""
-    
+
     def generate_report(self, profile_report, output_path: str):
         """Generate JSON report from profile"""
         json_data = profile_report.to_dict()
-        
-        with open(output_path, 'w', encoding='utf-8') as f:
+
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(json_data, f, indent=2, default=str)
 
 
 class PDFReporter:
     """Generate PDF reports"""
-    
+
     def generate_report(self, profile_report, output_path: str):
         """Generate PDF report from profile"""
         # First generate HTML
         html_reporter = HTMLReporter()
-        temp_html = output_path.replace('.pdf', '_temp.html')
+        temp_html = output_path.replace(".pdf", "_temp.html")
         html_reporter.generate_report(profile_report, temp_html)
-        
+
         # Convert HTML to PDF (requires weasyprint)
         try:
             from weasyprint import HTML
+
             HTML(temp_html).write_pdf(output_path)
-            
+
             # Clean up temp file
             Path(temp_html).unlink()
         except ImportError:

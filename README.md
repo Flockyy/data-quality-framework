@@ -208,11 +208,11 @@ from dqf.rules import BaseRule
 
 class CustomBusinessRule(BaseRule):
     """Validate business-specific logic"""
-    
+
     def validate(self, df):
         # Custom validation logic
         invalid = df[df['revenue'] < df['cost']]
-        
+
         return {
             'valid': len(invalid) == 0,
             'failures': len(invalid),
@@ -265,12 +265,12 @@ validation:
     - column: customer_id
       type: not_null
       severity: critical
-    
+
     - column: email
       type: regex
       pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
       severity: high
-    
+
     - column: amount
       type: range
       min: 0
@@ -284,12 +284,12 @@ monitoring:
     - uniqueness
     - validity
     - consistency
-  
+
   alerts:
     - condition: completeness < 0.95
       channel: slack
       severity: high
-    
+
     - condition: validity < 0.99
       channel: email
       recipients: [data-team@company.com]
